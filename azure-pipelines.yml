@@ -7,6 +7,7 @@ resources:
 variables:
   imageRepo: sampleapp
   tag: '$(Build.BuildId)'
+  acrdevurl: knacr01.azurecr.io
 
 stages:
 - stage: Build
@@ -57,5 +58,6 @@ stages:
                 action: 'deploy'
                 namespace: 'default'
                 manifests: |
-                  $(Pipeline.Workspace)/manifests/deployment.yml
-                  $(Pipeline.Workspace)/manifests/service.yml
+                  $(Pipeline.workspace)/manifests/deployment.yml
+                  $(Pipeline.workspace)/manifests/service.yml
+                containers: '$(acrdevurl)/$(imageRepo):$(tag)'
