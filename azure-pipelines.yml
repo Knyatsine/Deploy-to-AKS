@@ -37,33 +37,26 @@ stages:
   variables:
     acrsecret: akssecret234
   jobs:
-    - job: Deploy
+    - deployment: Deploy
       displayName: Deploy to AKS
+      environment: 'k8sdev.default'
       pool:
        vmImage: ubuntu-latest
-      steps:
-        - task: DownloadPipelineArtifact@2
-          inputs:
-            buildType: 'current'
-            artifactName: 'manifests'
-            targetPath: '$(Pipeline.Workspace)/manifests'
-            
-        # - task: KubernetesManifest@1
-        #   inputs:
-        #     action: 'createSecret'
-        #     connectionType: 'kubernetesServiceConnection'
-        #     kubernetesServiceConnection: 'k8s'
-        #     namespace: 'default'
-        #     secretType: 'dockerRegistry'
-        #     secretName: '$(acrsecret)'
-        #     dockerRegistryEndpoint: 'acr'
-        - task: KubernetesManifest@1
-          displayName:  Deploy
-          inputs:
-            action: 'deploy'
-            connectionType: 'kubernetesServiceConnection'
-            kubernetesServiceConnection: 'k8s'
-            namespace: 'default'
-            manifests: |
-              $(Pipeline.Workspace)/manifests/deployment.yml
-              $(Pipeline.Workspace)/manifests/service.yml
+      strategy:
+       runOnce:
+         deploy:
+           
+          steps:
+            - task: DownloadPipelineArtifact@2
+              inputs:
+                buildType: 'current'
+                artifactName: 'manifests'
+                targetPath: '$(Pipeline.Workspace)/manifests'
+            - task: KubernetesManifest@1
+              displayName:  Deploy
+              inputs:
+                action: 'deploy'
+                namespace: 'default'
+                manifests: |
+                  $(Pipeline.Workspace)/manifests/deployment.yml
+                  $(Pipeline.Workspace)/manifests/service.yml
